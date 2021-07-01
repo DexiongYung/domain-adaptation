@@ -24,9 +24,9 @@ class CorruptDataset(ImageFolder):
                 corr_intensity_lst = zip(self.corruption, self.intensity)
 
                 for corruption, intensity in corr_intensity_lst:
-                    ret.append(torch.tensor(key2deg[corruption](tnsr_img, intensity)))
+                    ret.append(torch.tensor(key2deg[corruption](tnsr_img, int(intensity)).astype(np.float)).type(torch.float))
 
-                return tuple(ret) 
+                return ret 
             else:
                 return tnsr_img, torch.tensor(key2deg[self.corruption](tnsr_img, self.intensity))
         else:

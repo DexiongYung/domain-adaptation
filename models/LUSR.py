@@ -4,8 +4,41 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Categorical, Beta
 from torch.autograd import Function
-from common import *
+from models.common import *
 
+def forward_loss(x, model, beta):
+    mu, logsigma, classcode = model.encoder(x)
+    contentcode = reparameterize(mu, logsigma)
+    shuffled_classcode = classcode[torch.randperm(classcode.shape[0])]
+
+    latentcode1 = torch.cat([contentcode, shuffled_classcode], dim=1)
+    latentcode2 = torch.cat([contentcode, classcode], dim=1)
+
+    recon_x1 = model.decoder(latentcode1)
+    recon_x2 = model.decoder(latentcode2)
+
+    return vae_loss(x, mu, logsigma, recon_x1, beta) + vae_loss(x, mu, logsigma, recon_x2, beta)
+
+
+def backward_loss(x, model, device):
+    mu, logsigma, classcode = model.encoder(x)
+    shuffled_classcode = classcode[torch.randperm(classcode.shape[0])]
+    randcontent = torch.randn_like(mu).to(device)
+
+    latentcode1 = torch.cat([randcontent, classcode], dim=1)
+    latentcode2 = torch.cat([randcontent, shuffled_classcode], dim=1)
+
+    recon_imgs1 = model.decoder(latentcode1).detach()
+    recon_imgs2 = model.decoder(latentcode2).detach()
+
+    cycle_mu1, cycle_logsigma1, cycle_classcode1 = model.encoder(recon_imgs1)
+    cycle_mu2, cycle_logsigma2, cycle_classcode2 = model.encoder(recon_imgs2)
+
+    cycle_contentcode1 = reparameterize(cycle_mu1, cycle_logsigma1)
+    cycle_contentcode2 = reparameterize(cycle_mu2, cycle_logsigma2)
+
+    bloss = F.l1_loss(cycle_contentcode1, cycle_contentcode2)
+    return bloss
 
 # Models for carracing games
 class Encoder(nn.Module):
@@ -51,11 +84,11 @@ class Decoder(nn.Module):
 
 
 # DisentangledVAE here is actually Cycle-Consistent VAE, disentangled stands for the disentanglement between domain-general and domain-specifc embeddings 
-class DisentangledVAE(nn.Module):
-    def __init__(self, class_latent_size = 8, content_latent_size = 32, img_channel = 3, flatten_size = 1024):
-        super(DisentangledVAE, self).__init__()
-        self.encoder = Encoder(class_latent_size, content_latent_size, img_channel, flatten_size)
-        self.decoder = Decoder(class_latent_size + content_latent_size, img_channel, flatten_size)
+class LUSR_64(nn.Module):
+    def __init__(self, class_latent_size = 8, content_latent_size = 32, input_channel = 3, flatten_size = 1024):
+        super(LUSR_64, self).__init__()
+        self.encoder = Encoder(class_latent_size, content_latent_size, input_channel, flatten_size)
+        self.decoder = Decoder(class_latent_size + content_latent_size, input_channel, flatten_size)
 
     def forward(self, x):
         mu, logsigma, classcode = self.encoder(x)
@@ -120,10 +153,10 @@ class CarlaDecoder(nn.Module):
 
 
 class CarlaDisentangledVAE(nn.Module):
-    def __init__(self, class_latent_size = 16, content_latent_size = 32, img_channel = 3, flatten_size=9216):
+    def __init__(self, class_latent_size = 16, content_latent_size = 32, input_channel = 3, flatten_size=9216):
         super(CarlaDisentangledVAE, self).__init__()
-        self.encoder = CarlaEncoder(class_latent_size, content_latent_size, img_channel, flatten_size)
-        self.decoder = CarlaDecoder(class_latent_size + content_latent_size, img_channel)
+        self.encoder = CarlaEncoder(class_latent_size, content_latent_size, input_channel, flatten_size)
+        self.decoder = CarlaDecoder(class_latent_size + content_latent_size, input_channel)
 
     def forward(self, x):
         mu, logsigma, classcode = self.encoder(x)

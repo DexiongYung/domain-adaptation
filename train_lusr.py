@@ -6,6 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from torchvision.utils import save_image
 from dataloader.corrupt_loader import CorruptDataset
+from models.common import reparameterize
 from corruptions import *
 import torchvision
 
@@ -13,11 +14,10 @@ import numpy as np
 import argparse
 import os
 
-from model.LUSR import DisentangledVAE, CarlaDisentangledVAE
+from models.LUSR import DisentangledVAE, CarlaDisentangledVAE
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data-dir', default='./64_frames', type=str, help='path to the data')
-parser.add_argument('--data-tag', default='car', type=str, help='files with data_tag in name under data directory will be considered as collected states')
 parser.add_argument('--num-splitted', default=10, type=int, help='number of files that the states from one domain are splitted into')
 parser.add_argument('--batch-size', default=100, type=int)
 parser.add_argument('--num-epochs', default=20, type=int)
@@ -29,15 +29,10 @@ parser.add_argument('--bloss-coef', default=1, type=int)
 parser.add_argument('--class-latent-size', default=8, type=int)
 parser.add_argument('--content-latent-size', default=16, type=int)
 parser.add_argument('--flatten-size', default=1024, type=int)
-parser.add_argument('--carla-model', default=False, action='store_true', help='CARLA or Carracing')
+parser.add_argument('--carla-model', default=True, action='store_true', help='CARLA or Carracing')
 args = parser.parse_args()
 
 Model = CarlaDisentangledVAE if args.carla_model else DisentangledVAE
-
-def reparameterize(mu, logsigma):
-    std = torch.exp(0.5*logsigma)
-    eps = torch.randn_like(std)
-    return mu + eps*std
 
 def updateloader(loader, dataset):
     dataset.loadnext()
