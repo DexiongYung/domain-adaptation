@@ -3,14 +3,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+def kl_loss(x, mu, logsigma, beta):
+    kl = -0.5 * torch.sum(1 + logsigma - mu.pow(2) - logsigma.exp())
+    return beta * (kl / torch.numel(x))
+
+
 def vae_loss(x, mu, logsigma, recon_x, beta=1):
     recon_loss = F.mse_loss(x, recon_x, reduction='mean')
-    kl_loss = kl_loss(x, mu, logsigma, beta)
-    return recon_loss + kl_loss
+    kl = kl_loss(x, mu, logsigma, beta)
+    return recon_loss + kl
 
-def kl_loss(x, mu, logsigma, beta):
-    kl_loss = -0.5 * torch.sum(1 + logsigma - mu.pow(2) - logsigma.exp())
-    return beta * (kl_loss / torch.numel(x))
 
 def reparameterize(mu, logsigma):
     std = torch.exp(0.5*logsigma)
