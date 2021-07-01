@@ -22,3 +22,38 @@ def AE_image_save(model, all_imgs):
     imgs = all_imgs[rand_idx[:9]]
     recon = model(imgs)
     return torch.cat([imgs, recon], dim=0)
+
+def DDVAE_image_save(model, imgs_list):
+    inputs_list = None
+    outputs_list = None
+    if isinstance(imgs_list, list) or isinstance(imgs_list, tuple):
+        clean = imgs_list[0]
+        rand_idx = torch.randperm(clean.shape[0])
+        clean = clean[rand_idx[:9]]
+
+        _, _, clean_recon, _, _, clean_noise_recon = model(clean)
+        inputs_list = [clean]
+        outputs_list = [clean_recon, clean_noise_recon]
+
+        for i in range(1, len(imgs_list)):
+            noise = imgs_list[i][rand_idx[:9]]
+            _, _, noised_clean_recon, _, _, noised_noise_recon = model(noise)
+
+            inputs_list.append(noise)
+            outputs_list.append(noised_clean_recon)
+            outputs_list.append(noised_noise_recon)
+    
+        in_tensor = torch.cat(inputs_list, dim=0)
+        out_tensor = torch.cat(outputs_list, dim=0)
+
+        return torch.cat((in_tensor, out_tensor), dim=0)
+    else:
+        rand_idx = torch.randperm(clean.shape[0])
+        clean = clean[rand_idx[:9]]
+
+        _, _, clean_recon, _, _, clean_noise_recon = model(clean)
+
+        return torch.cat((clean_recon, clean_noise_recon), dim=0)
+
+
+        

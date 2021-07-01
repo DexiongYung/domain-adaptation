@@ -20,6 +20,7 @@ from models.LUSR import LUSR_64
 from models.AE import AE_64
 from models.VAE import VAE_64
 from models.DARLA import DARLA_64
+from models.DDVAE import DDVAE_64
 
 from loss_procedures import *
 from recon_save_procedures import *
@@ -36,6 +37,8 @@ def get_assets(cfg):
         return VAE_64(**model_params), VAE_loss, VAE_image_save
     elif model_name == 'DARLA':
         return DARLA_64(**model_params), DARLA_loss, VAE_image_save
+    elif model_name == 'DDVAE':
+        return DDVAE_64(**model_params), DDVAE_loss, DDVAE_image_save
     else:
         raise ValueError(f"Model {model_name} not available")
 
@@ -97,9 +100,19 @@ def main(cfg):
             optimizer.step()
         
         eval_loss = 0
+        l2_loss = 0
         for j, imgs_list in enumerate(eval_loader):
             with torch.no_grad():
                 eval_loss += loss_procedure(cfg = cfg, model = model, imgs_list = imgs_list, device = device).item()
+                
+                input = handle_reshape(imgs_list, device)
+                if arch == 'AE':
+                    recon_x = model(input)
+                elif arch == 'LUSR':
+                    _, _, _, recon_x = model(input)
+                else:
+                    _, _, recon_x = model(input)
+                l2_loss += torch.nn.functional.mse_loss(recon_x, input)
 
         if eval_loss < best_eval_loss:
             best_eval_loss = eval_loss
@@ -107,23 +120,28 @@ def main(cfg):
             torch.save(model.encoder.state_dict(), f"{ckpt_path}/best_encoder.pt")
 
         writer.add_scalar('loss', eval_loss, i_epoch)
+        writer.add_scalar('L2 loss', l2_loss, i_epoch)
         
         if i_epoch % cfg['training']['save_freq'] == 0:
-            all_imgs = handle_reshape(imgs_list, device)
             print("%d Epochs" % (i_epoch + 1))            
             with torch.no_grad():
-                saved_imgs = image_save_procedure(model = model, all_imgs = all_imgs)
+                if arch != 'DDVAE':
+                    all_imgs = handle_reshape(imgs_list, device)
+                    saved_imgs = image_save_procedure(model = model, all_imgs = all_imgs)
+                else:
+                    saved_imgs = image_save_procedure(model = model, img_lists = img_lists)
+
                 save_image(saved_imgs, f"{ck_imgs_path}/epoch_%d.png" % (i_epoch + 1), nrow=9)
                 writer.add_image(f"Epoch: {i_epoch} Recon", torchvision.utils.make_grid(saved_imgs))
 
         torch.save(model.state_dict(), f"{ckpt_path}/model.pt")
         torch.save(model.encoder.state_dict(), f"{ckpt_path}/encoder.pt")
     
-    writer.add_graph(model, i_batch)
+    writer.add_graph(model, all_imgs)
     writer.close()
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', default='./configs/ae.yaml', type=str, help='Path to yaml config file')
+    parser.add_argument('--config', default='./configs/ddvae.yaml', type=str, help='Path to yaml config file')
     args = parser.parse_args()
 
     with open(args.config) as fp:
