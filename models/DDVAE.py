@@ -19,7 +19,7 @@ class Encoder(nn.Module):
         c_sigma = self.clean_sigma(x_flatten)
 
         n_mu = self.noise_mu(x_flatten)
-        n_sigma = self.clean_sigma(x_flatten)
+        n_sigma = self.noise_sigma(x_flatten)
 
         c_latent = reparameterize(c_mu, c_sigma)
         n_latent = reparameterize(n_mu, n_sigma)
@@ -33,17 +33,17 @@ class DDVAE_64(nn.Module):
         self.c_decoder_fc1 = nn.Linear(content_latent_size, flatten_size)
         self.c_decoder = carracing_decoder(flatten_size)
 
-        self.n_decoder_fc1 = nn.Linear(content_latent_size, flatten_size)
+        self.n_decoder_fc1 = nn.Linear(class_latent_size, flatten_size)
         self.n_decoder = carracing_decoder(flatten_size)
     
     def forward(self, x):
         c_mu, c_sigma, c_latent, n_mu, n_sigma, n_latent = self.encoder(x)
-        c_latent = self.c_decoder_fc1(latent)
+        c_latent = self.c_decoder_fc1(c_latent)
         flatten_x = c_latent.unsqueeze(-1).unsqueeze(-1)
-        recon_x = self.decoder(flatten_x)
+        recon_x = self.c_decoder(flatten_x)
 
-        n_latent = self.n_decoder_fc1(latent)
+        n_latent = self.n_decoder_fc1(n_latent)
         n_flatten_x = n_latent.unsqueeze(-1).unsqueeze(-1)
-        noise_recon_x = self.decoder(n_flatten_x)
+        noise_recon_x = self.n_decoder(n_flatten_x)
 
         return c_mu, c_sigma, recon_x, n_mu, n_sigma, noise_recon_x

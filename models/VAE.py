@@ -27,10 +27,13 @@ class VAE_64(nn.Module):
         self.decoder_fc1 = nn.Linear(content_latent_size, flatten_size)
         self.decoder = carracing_decoder(flatten_size)
     
-    def forward(self, x):
+    def forward(self, x, return_latent: bool = False):
         mu, sigma, latent = self.encoder(x)
         latent_1 = self.decoder_fc1(latent)
         flatten_x = latent_1.unsqueeze(-1).unsqueeze(-1)
         recon_x = self.decoder(flatten_x)
 
-        return mu, sigma, recon_x
+        if return_latent:
+            return mu, sigma, recon_x, flatten_x
+        else:
+            return mu, sigma, recon_x

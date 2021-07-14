@@ -6,6 +6,8 @@ from PIL import Image
 # /////////////// Corruption Helpers ///////////////
 
 import skimage as sk
+from torchvision import transforms
+import torchvision.transforms.functional as F
 from skimage.filters import gaussian
 from io import BytesIO
 from wand.image import Image as WandImage
@@ -298,7 +300,7 @@ def snow(x, severity=1):
                               cv2.IMREAD_UNCHANGED) / 255.
     snow_layer = snow_layer[..., np.newaxis]
 
-    x = c[6] * x + (1 - c[6]) * np.maximum(x, cv2.cvtColor(x, cv2.COLOR_RGB2GRAY).reshape(size, size, 1) * 1.5 + 0.5)
+    x = c[6] * x + (1 - c[6]) * np.maximum(x, cv2.cvtColor(x, code = cv2.COLOR_RGB2GRAY).reshape(size, size, 1) * 1.5 + 0.5)
     return np.clip(x + snow_layer + np.rot90(snow_layer, k=2), 0, 1) * 255
 
 
@@ -367,6 +369,74 @@ def contrast(x, severity=1):
     x = np.array(x) / 255.
     means = np.mean(x, axis=(0, 1), keepdims=True)
     return np.clip((x - means) * c + means, 0, 1) * 255
+
+
+def generate_random_lines(imshape,slant,drop_length,rain_type):
+    drops=[]
+    area=imshape[0]*imshape[1]
+    no_of_drops=area//600
+
+    if rain_type.lower()=='drizzle':
+        no_of_drops=area//770
+        drop_length=10
+    elif rain_type.lower()=='heavy':
+        drop_length=30
+    elif rain_type.lower()=='torrential':
+        no_of_drops=area//500
+        drop_length=60
+
+    for i in range(no_of_drops): ## If You want heavy rain, try increasing this
+        if slant<0:
+            x= np.random.randint(slant,imshape[1])
+        else:
+            x= np.random.randint(0,imshape[1]-slant)
+        y= np.random.randint(0,imshape[0]-drop_length)
+        drops.append((x,y))
+    return drops,drop_length
+
+
+def rain_process(image,slant,drop_length,drop_color,drop_width,rain_drops):
+    imshape = image.shape  
+    image_t = image.copy()
+    for rain_drop in rain_drops:
+        cv2.line(image_t,(rain_drop[0],rain_drop[1]),(rain_drop[0]+slant,rain_drop[1]+drop_length),drop_color,drop_width)
+    image= cv2.blur(image_t,(7,7)) ## rainy view are blurry
+    brightness_coefficient = 0.7 ## rainy days are usually shady 
+    image_HLS = hls(image) ## Conversion to HLS
+    image_HLS[:,:,1] = image_HLS[:,:,1]*brightness_coefficient ## scale pixel values down for channel 1(Lightness)
+    image_RGB= rgb(image_HLS,'hls') ## Conversion to RGB
+    return image_RGB
+
+
+def hls(image,src='RGB'):
+    image_HLS = eval('cv2.cvtColor(image,cv2.COLOR_'+src.upper()+'2HLS)')
+    return image_HLS
+
+
+def rgb(image, src='BGR'):
+    image_RGB= eval('cv2.cvtColor(image,cv2.COLOR_'+src.upper()+'2RGB)')
+    return image_RGB
+
+
+def rain(image, slant=-1,drop_length=20,drop_width=1,drop_color=(200,200,200),rain_type='torrential'): ## (200,200,200) a shade of gray
+    # verify_image(image)
+    image = np.transpose(image.numpy(), (1,2,0))
+    slant_extreme=slant
+    # if not(is_numeric(slant_extreme) and (slant_extreme>=-20 and slant_extreme<=20)or slant_extreme==-1):
+    #     raise Exception(err_rain_slant)
+    # if not(is_numeric(drop_width) and drop_width>=1 and drop_width<=5):
+    #     raise Exception(err_rain_width)
+    # if not(is_numeric(drop_length) and drop_length>=0 and drop_length<=100):
+    #     raise Exception(err_rain_length)
+
+    imshape = image.shape
+    if slant_extreme==-1:
+        slant= np.random.randint(-10,10) ##generate random slant if no slant value is given
+    rain_drops, drop_length= generate_random_lines(imshape,slant,drop_length,rain_type)
+    output= rain_process(image,slant_extreme,drop_length,drop_color,drop_width,rain_drops)
+    image_RGB=output
+
+    return np.transpose(image_RGB, (2, 0, 1))
 
 
 def brightness(x, severity=1):
