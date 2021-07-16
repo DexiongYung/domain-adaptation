@@ -2,6 +2,8 @@ from corruptions.corruptions import *
 
 import collections
 
+weather = ['rain', 'fog', 'frost', 'snow']
+
 key2deg = collections.OrderedDict()
 key2deg['gaussianNoise'] = gaussian_noise
 key2deg['shotNoise'] = shot_noise

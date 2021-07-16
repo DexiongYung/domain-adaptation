@@ -241,7 +241,7 @@ def fog(x, severity=1):
     x = np.array(x) / 255.
     max_val = x.max()
     x += c[0] * plasma_fractal(wibbledecay=c[1])[:size, :size][..., np.newaxis]
-    return np.clip(x * max_val / (max_val + c[0]), 0, 1) * 255
+    return np.clip(x * max_val / (max_val + c[0]), 0, 1) # *255
 
 
 def frost(x, severity=1):
@@ -266,7 +266,7 @@ def frost(x, severity=1):
 
     frost = frost[x_start:x_start + size, y_start:y_start + size][..., [2, 1, 0]]
 
-    return np.clip(c[0] * np.array(x) + c[1] * frost, 0, 255)
+    return np.clip(c[0] * np.array(x) + c[1] * frost, 0, 255) / 255
 
 
 def snow(x, severity=1):
@@ -420,7 +420,6 @@ def rgb(image, src='BGR'):
 
 def rain(image, slant=-1,drop_length=20,drop_width=1,drop_color=(200,200,200),rain_type='torrential'): ## (200,200,200) a shade of gray
     # verify_image(image)
-    image = np.transpose(image.numpy(), (1,2,0))
     slant_extreme=slant
     # if not(is_numeric(slant_extreme) and (slant_extreme>=-20 and slant_extreme<=20)or slant_extreme==-1):
     #     raise Exception(err_rain_slant)
@@ -433,10 +432,8 @@ def rain(image, slant=-1,drop_length=20,drop_width=1,drop_color=(200,200,200),ra
     if slant_extreme==-1:
         slant= np.random.randint(-10,10) ##generate random slant if no slant value is given
     rain_drops, drop_length= generate_random_lines(imshape,slant,drop_length,rain_type)
-    output= rain_process(image,slant_extreme,drop_length,drop_color,drop_width,rain_drops)
-    image_RGB=output
-
-    return np.transpose(image_RGB, (2, 0, 1))
+    output = rain_process(image,slant_extreme,drop_length,drop_color,drop_width,rain_drops)
+    return output
 
 
 def brightness(x, severity=1):
