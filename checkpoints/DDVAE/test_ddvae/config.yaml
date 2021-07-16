@@ -1,4 +1,4 @@
-beta: null
+beta: 1
 id: test_ddvae
 model: DDVAE
 model_params:

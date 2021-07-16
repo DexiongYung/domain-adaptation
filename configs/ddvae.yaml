@@ -1,6 +1,6 @@
-id: 'test_ddvae'
+id: 'l1_on_param'
 model: DDVAE
-beta:
+beta: 1
 model_params:
   class_latent_size: 16
   content_latent_size: 64
@@ -11,6 +11,13 @@ training:
   num_workers: 4
   batch_size: 100
   lr: 0.0001
-  corruptions: ['gaussianBlur', 'speckleNoise', 'impulseNoise']
-  intensities: [1,1,1]
+  corruptions: ['frost', 'fog']
+  intensities: [5,5]
   save_freq: 10
+eval:
+  path: ./checkpoints/DDVAE/new_idea/best_model.pt
+  root: './64_frames_test'
+  corruptions: ['frost', 'fog', 'gaussianBlur', 'speckleNoise', 'impulseNoise']
+  intensities: [5,5,1,1,1]
+  # corruptions: ['gaussianBlur', 'speckleNoise', 'impulseNoise']
+  # intensities: [1,1,1]

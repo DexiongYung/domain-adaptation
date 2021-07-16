@@ -8,8 +8,7 @@ def LUSR_loss(cfg, model, imgs_list, device):
     img_count = 0
 
     if isinstance(imgs_list, list) or isinstance(imgs_list, tuple):
-        # No clean comparison
-        for i in range(1, len(imgs_list)):
+        for i in range(0, len(imgs_list)):
             corrupt_imgs = imgs_list[i].type(torch.FloatTensor).to(device)
             floss += forward_loss(corrupt_imgs, model, cfg['beta'])
             img_count += corrupt_imgs.shape[0]

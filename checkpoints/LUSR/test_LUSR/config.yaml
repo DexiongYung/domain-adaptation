@@ -8,9 +8,8 @@ model_params:
 training:
   batch_size: 100
   corruptions:
-  - gaussianBlur
-  - speckleNoise
-  - impulseNoise
+  - contrast
+  - elastic
   data_root: ./64_frames
   epoch: 200
   eval_root: ./64_frames_test
