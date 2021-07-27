@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from .common import *
+from domain_adaptation.models.common import *
+from domain_adaptation.models.M64.M64 import M64
 
 class Encoder(nn.Module):
     def __init__(self, content_latent_size = 32, input_channel = 3, flatten_size = 1024):
@@ -20,9 +21,9 @@ class Encoder(nn.Module):
 
         return mu, sigma, latent
 
-class VAE_64(nn.Module):
+class VAE_64(M64):
     def __init__(self, content_latent_size = 32, input_channel = 3, flatten_size = 1024, **kwargs):
-        super(VAE_64, self).__init__()
+        super(VAE_64, self).__init__(content_latent_size, input_channel, flatten_size)
         self.encoder = Encoder(content_latent_size, input_channel, flatten_size)
         self.decoder_fc1 = nn.Linear(content_latent_size, flatten_size)
         self.decoder = carracing_decoder(flatten_size)

@@ -4,7 +4,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Categorical, Beta
 from torch.autograd import Function
-from models.common import *
+from domain_adaptation.models.common import *
+from domain_adaptation.models.M64.M64 import M64
 
 def forward_loss(x, model, beta):
     mu, logsigma, classcode = model.encoder(x)
@@ -84,20 +85,23 @@ class Decoder(nn.Module):
 
 
 # DisentangledVAE here is actually Cycle-Consistent VAE, disentangled stands for the disentanglement between domain-general and domain-specifc embeddings 
-class LUSR_64(nn.Module):
+class LUSR_64(M64):
     def __init__(self, class_latent_size = 8, content_latent_size = 32, input_channel = 3, flatten_size = 1024):
-        super(LUSR_64, self).__init__()
+        super(LUSR_64, self).__init__(content_latent_size, input_channel, flatten_size)
         self.encoder = Encoder(class_latent_size, content_latent_size, input_channel, flatten_size)
         self.decoder = Decoder(class_latent_size + content_latent_size, input_channel, flatten_size)
 
-    def forward(self, x):
+    def forward(self, x, return_latent:bool=False):
         mu, logsigma, classcode = self.encoder(x)
         contentcode = reparameterize(mu, logsigma)
         latentcode = torch.cat([contentcode, classcode], dim=1)
 
         recon_x = self.decoder(latentcode)
 
-        return mu, logsigma, classcode, recon_x
+        if return_latent:
+            return mu, logsigma, classcode, latentcode, recon_x
+        else:
+            return mu, logsigma, classcode, recon_x
 
 
 # Models for CARLA autonomous driving
