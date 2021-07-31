@@ -16,11 +16,11 @@ import numpy as np
 import argparse
 import os
 
-from models.LUSR import LUSR_64
-from models.AE import AE_64
-from models.VAE import VAE_64
-from models.DARLA import DARLA_64
-from models.DDVAE import DDVAE_64
+from models.M64.LUSR import LUSR_64
+from models.M64.AE import AE_64
+from models.M64.VAE import VAE_64
+from models.M64.DARLA import DARLA_64
+from models.M64.DDVAE import DDVAE_64
 
 from loss_procedures import *
 from recon_save_procedures import *

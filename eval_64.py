@@ -19,7 +19,7 @@ import numpy as np
 import argparse
 import os
 
-from models.LUSR import *
+from models.M64.LUSR import *
 from loss_procedures import *
 from recon_save_procedures import *
 from train_64 import get_assets
@@ -139,7 +139,7 @@ def main(cfg):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', default='./configs/lusr.yaml',
+    parser.add_argument('--config', default='./configs/ddvae.yaml',
                         type=str, help='Path to yaml config file')
     parser.add_argument('--clean_only', default=False,
                         type=bool, help='Compare to clean latent only')

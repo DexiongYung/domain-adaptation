@@ -16,7 +16,7 @@ training:
   intensities: [5,5]
   save_freq: 10
 eval:
-  path: ./checkpoints/LUSR/weather/best_model.pt
+  path: ./checkpoints/LUSR/weather_redo/best_model.pt
   root: './64_frames_test'
   # corruptions: ['frost', 'fog']
   # intensities: [5,5]
