@@ -1,7 +1,6 @@
 import torch
 import torch.nn.functional as F
-from models.LUSR import forward_loss, backward_loss
-from models.common import vae_loss, kl_loss
+from models.common import vae_loss, kl_loss, forward_loss, backward_loss
 
 def LUSR_loss(cfg, model, imgs_list, device):
     floss = 0

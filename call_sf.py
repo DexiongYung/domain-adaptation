@@ -4,4 +4,4 @@ scenes_lst = ["FloorPlan_Train10_1","FloorPlan_Train10_2","FloorPlan_Train10_3",
 
 for s in scenes_lst:
     print(f'Running scene: {s}')
-    os.system(f'python image_gen.py --scene={s}')
+    os.system(f'python generate_frames.py --scene={s}')
