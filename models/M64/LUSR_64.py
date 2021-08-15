@@ -4,8 +4,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Categorical, Beta
 from torch.autograd import Function
-from models.common import *
-from models.M64.M64 import M64
+from domain_adaptation.models.common import *
+from domain_adaptation.models.M64.M64 import M64
 
 # Models for carracing games
 class Encoder(nn.Module):

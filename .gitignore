@@ -3,3 +3,4 @@ checkimages/
 heatmap/
 data/
 checkpoints/
+pycache/

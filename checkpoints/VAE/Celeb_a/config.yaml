@@ -1,0 +1,35 @@
+beta: 1
+eval:
+  corruptions:
+  - frost
+  - fog
+  - gaussianBlur
+  - speckleNoise
+  - impulseNoise
+  intensities:
+  - 5
+  - 5
+  - 1
+  - 1
+  - 1
+  path: ./checkpoints/VAE/weather/best_model.pt
+  root: ./data/128_frames/eval
+id: Celeb_a
+model: VAE
+model_params:
+  class_latent_size: 16
+  content_latent_size: 64
+training:
+  batch_size: 2
+  corruptions:
+  - frost
+  - fog
+  data_root: ./data/128_frames/train
+  epoch: 200
+  eval_root: ./data/128_frames/eval
+  intensities:
+  - 5
+  - 5
+  lr: 0.0001
+  num_workers: 4
+  save_freq: 10

@@ -159,7 +159,7 @@ def main(cfg):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', default='./configs/ddvae.yaml',
+    parser.add_argument('--config', default='./configs/vae.yaml',
                         type=str, help='Path to yaml config file')
     args = parser.parse_args()
 
