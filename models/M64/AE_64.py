@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
-from domain_adaptation.common import *
-from domain_adaptation.models.M64.M64 import M64
+from models.common import *
+from models.M64.M64 import M64
 
 class Encoder(nn.Module):
     def __init__(self, content_latent_size = 32, input_channel = 3, flatten_size = 1024):
@@ -26,4 +26,4 @@ class AE_64(M64):
         latent = self.encoder(x)
         latent_1 = self.decoder_fc1(latent)
         flatten_x = latent_1.unsqueeze(-1).unsqueeze(-1)
-        return self.decoder(flatten_x), flatten_x
+        return self.decoder(flatten_x), latent

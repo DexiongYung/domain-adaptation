@@ -20,7 +20,13 @@ def VAE_image_save(model, all_imgs):
 def AE_image_save(model, all_imgs):
     rand_idx = torch.randperm(all_imgs.shape[0])
     imgs = all_imgs[rand_idx[:9]]
-    recon = model(imgs)
+    recon, _ = model(imgs)
+    return torch.cat([imgs, recon], dim=0)
+
+def DARLA_image_save(model, all_imgs):
+    rand_idx = torch.randperm(all_imgs.shape[0])
+    imgs = all_imgs[rand_idx[:9]]
+    _, _, recon, _ = model(imgs)
     return torch.cat([imgs, recon], dim=0)
 
 def DDVAE_image_save(model, imgs_list, device):

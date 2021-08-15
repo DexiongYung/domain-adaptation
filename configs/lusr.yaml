@@ -1,4 +1,4 @@
-id: 'weather_redo'
+id: 'weather_128'
 model: LUSR
 beta: 1
 bloss_coeff: 10
@@ -6,11 +6,11 @@ model_params:
   class_latent_size: 16
   content_latent_size: 64
 training:
-  data_root: './64_frames'
-  eval_root: './64_frames_test'
+  data_root: './data/128_frames/train'
+  eval_root: './data/128_frames/eval'
   epoch: 200
   num_workers: 4
-  batch_size: 100
+  batch_size: 16
   lr: 0.0001
   corruptions: ['frost', 'fog']
   intensities: [5,5]

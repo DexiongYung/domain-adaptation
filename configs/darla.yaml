@@ -5,7 +5,7 @@ bloss_coeff: 20
 model_params:
   class_latent_size: 16
   content_latent_size: 64
-  AE_weight_path: './checkpoints/AE/test_ae/best_model.pt'
+  AE_weight_path: './checkpoints/AE/weather/best_model.pt'
 training:
   data_root: './64_frames'
   eval_root: './64_frames_test'

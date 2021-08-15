@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
-from domain_adaptation.models.common import *
-from domain_adaptation.models.M64.M64 import M64
+from models.common import *
+from models.M64.M64 import M64
 
 class Encoder(nn.Module):
     def __init__(self, class_latent_size:int = 8, content_latent_size:int = 32, input_channel:int = 3, flatten_size:int = 1024):

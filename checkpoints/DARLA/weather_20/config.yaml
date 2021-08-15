@@ -18,7 +18,7 @@ eval:
 id: weather_20
 model: DARLA
 model_params:
-  AE_weight_path: ./checkpoints/AE/test_ae/best_model.pt
+  AE_weight_path: ./checkpoints/AE/weather/best_model.pt
   class_latent_size: 16
   content_latent_size: 64
 training:

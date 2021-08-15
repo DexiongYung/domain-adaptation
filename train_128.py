@@ -16,11 +16,8 @@ import numpy as np
 import argparse
 import os
 
-from models.M64.LUSR_64 import LUSR_64
-from models.M64.AE_64 import AE_64
-from models.M64.VAE_64 import VAE_64
-from models.M64.DARLA_64 import DARLA_64
-from models.M64.DDVAE_64 import DDVAE_64
+from models.M128.VAE_128 import VAE
+from models.M128.LUSR_128 import LUSR
 
 from loss_procedures import *
 from recon_save_procedures import *
@@ -30,22 +27,16 @@ def get_assets(cfg):
     model_name = cfg['model']
     model_params = cfg['model_params']
 
-    if model_name == 'LUSR':
-        return LUSR_64(**model_params), LUSR_loss, LUSR_image_save
-    elif model_name == 'AE':
-        return AE_64(**model_params), AE_loss, AE_image_save
-    elif model_name == 'VAE':
-        return VAE_64(**model_params), VAE_loss, VAE_image_save
-    elif model_name == 'DARLA':
-        return DARLA_64(**model_params), DARLA_loss, DARLA_image_save
+    if model_name == 'VAE':
+        return VAE(3, 128, 128, 1000), VAE_loss, VAE_image_save
+    elif model_name == 'LUSR':
+        return LUSR(3, 128, 128, 1000), LUSR_loss, LUSR_image_save
     elif model_name == 'DDVAE':
-        return VAE_64(**model_params), DDVAE_loss, DDVAE_image_save
-        # return DDVAE_64(**model_params), DDVAE_loss, DDVAE_image_save
+        return VAE(3, 128, 128, 1000), DDVAE_loss, DDVAE_image_save
     elif model_name == 'DVAE':
-        return VAE_64(**model_params), DVAE_loss, VAE_image_save
+        return VAE(3, 128, 128, 1000), DVAE_loss, VAE_image_save
     else:
-        raise ValueError(f"Model {model_name} not available")
-
+        raise ValueError(f"Model: {model_name} does not exist")
 
 def main(cfg):
     arch = cfg['model']
@@ -124,11 +115,9 @@ def main(cfg):
                     input = handle_reshape(imgs_list, device)
 
                     if arch == 'AE':
-                        recon_x, _ = model(input)
+                        recon_x = model(input)
                     elif arch == 'LUSR':
                         _, _, _, recon_x = model(input)
-                    elif arch == 'DARLA':
-                        _, _, recon_x, _ = model(input)
                     # elif arch == 'DDVAE':
                     #     _, _, recon_x, _, _, _ = model(input)
                     else:
@@ -170,7 +159,7 @@ def main(cfg):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', default='./configs/darla.yaml',
+    parser.add_argument('--config', default='./configs/ddvae.yaml',
                         type=str, help='Path to yaml config file')
     args = parser.parse_args()
 
